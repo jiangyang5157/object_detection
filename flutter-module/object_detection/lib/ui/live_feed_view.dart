@@ -26,6 +26,8 @@ class _LiveFeedViewState extends State<LiveFeedView> {
     await Tflite.loadModel(
       model: "assets/models/ssd_mobilenet.tflite",
       labels: "assets/models/labels.txt",
+      // model: "assets/models/test_labels.tflite",
+      // labels: "assets/models/test_model_unquant.txt",
     );
   }
 
