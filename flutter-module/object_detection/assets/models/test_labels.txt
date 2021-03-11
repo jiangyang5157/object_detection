@@ -1,3 +1,0 @@
-0 Scissor
-1 Rock
-2 Paper

@@ -1,14 +1,18 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
 import 'core/di.dart';
 import 'core/nav.dart';
 
+List<CameraDescription> camera;
+
 void main() async {
   // debugPaintSizeEnabled = true;
   WidgetsFlutterBinding.ensureInitialized();
+  camera = await availableCameras();
   // setup dependency injections
-  setupGetIt();
+  await setupGetIt();
   runApp(MyApp());
 }
 
