@@ -1,17 +1,11 @@
-import 'dart:async';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:tflite/tflite.dart';
-
-import '../main.dart';
-import 'camera_feed_view.dart';
+import 'package:object_detection/helper/camera_helper.dart';
+import 'package:object_detection/helper/tflite_helper.dart';
 
 class HomeView extends StatefulWidget {
-  // final List<CameraDescription> _cameras;
-  // GetIt.I<List<CameraDescription>>()
   HomeView();
 
   @override
@@ -19,20 +13,26 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  StreamController<List<RunModelOnFrameResult>>
-      _runModelOnFrameResultsController = new StreamController.broadcast();
-
   List<RunModelOnFrameResult> _runModelOnFrameResults = [];
 
-  setResult(List list) {
-    list.sort((a, b) => b.confidence.compareTo(a.confidence));
-    _runModelOnFrameResultsController.add(list);
-  }
+  @override
+  void initState() {
+    super.initState();
 
-  setupRunModelOnFrameResultsController() {
-    _runModelOnFrameResultsController.stream.listen((value) {
+    GetIt.I<CameraHelper>().initializeCamera();
+
+    GetIt.I<TfLiteHelper>().loadModel().then((value) {
       setState(() {
-        _runModelOnFrameResults = value;
+        GetIt.I<TfLiteHelper>().isReady = true;
+      });
+    });
+
+    GetIt.I<TfLiteHelper>().runModelOnFrameResultsController.stream.listen(
+        (value) {
+      print("#### runModelOnFrameResultsController.stream.listen receive result size: ${value.length}");
+      _runModelOnFrameResults = value;
+      setState(() {
+        GetIt.I<CameraHelper>().isReady = true;
       });
     }, onDone: () {
       print("#### runModelOnFrameResultsController.stream.listen onDone");
@@ -42,21 +42,6 @@ class _HomeViewState extends State<HomeView> {
     });
   }
 
-  loadModel() async {
-    print("#### Loading model..");
-    return Tflite.loadModel(
-      labels: "assets/models/labels.txt",
-      model: "assets/models/model_unquant.tflite",
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    setupRunModelOnFrameResultsController();
-    loadModel();
-  }
-
   @override
   Widget build(BuildContext context) {
     Size screen = MediaQuery.of(context).size;
@@ -64,20 +49,29 @@ class _HomeViewState extends State<HomeView> {
       appBar: AppBar(
         title: Text("HomeView"),
       ),
-      body: Stack(
-        children: <Widget>[
-          CameraFeedView(camera, setResult),
-          _buildRunModelOnFrameResultsWidget(
-              screen.width, _runModelOnFrameResults)
-        ],
+      body: FutureBuilder<void>(
+        future: GetIt.I<CameraHelper>().initializeCameraControllerFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return Stack(
+              children: <Widget>[
+                CameraPreview(GetIt.I<CameraHelper>().cameraController),
+                _buildRunModelOnFrameResultsWidget(
+                    screen.width, _runModelOnFrameResults)
+              ],
+            );
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        },
       ),
     );
   }
 
   @override
   void dispose() {
-    Tflite.close();
-    _runModelOnFrameResultsController.close();
+    GetIt.I<CameraHelper>().dispose();
+    GetIt.I<TfLiteHelper>().dispose();
     super.dispose();
   }
 
@@ -108,12 +102,7 @@ class _HomeViewState extends State<HomeView> {
                       ],
                     );
                   })
-              : Center(
-                  child: Text("Waiting for results..",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20.0,
-                      ))),
+              : Center(child: CircularProgressIndicator()),
         ),
       ),
     );

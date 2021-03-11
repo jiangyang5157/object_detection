@@ -5,13 +5,9 @@ import 'package:get_it/get_it.dart';
 import 'core/di.dart';
 import 'core/nav.dart';
 
-List<CameraDescription> camera;
-
 void main() async {
   // debugPaintSizeEnabled = true;
   WidgetsFlutterBinding.ensureInitialized();
-  camera = await availableCameras();
-  // setup dependency injections
   await setupGetIt();
   runApp(MyApp());
 }
