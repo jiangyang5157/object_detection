@@ -34,7 +34,6 @@ class CameraHelper {
         isReady = false;
         try {
           GetIt.I<TfLiteHelper>().runModelOnFrame(image);
-          print("#### runModelOnFrame..");
         } catch (e) {
           print("#### runModelOnFrame ERROR: $e");
         }

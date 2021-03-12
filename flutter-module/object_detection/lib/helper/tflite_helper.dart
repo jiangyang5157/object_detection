@@ -38,7 +38,7 @@ class TfLiteHelper {
             bytesList: image.planes.map((plane) {
               return plane.bytes;
             }).toList(),
-            numResults: 5)
+            numResults: 3)
         .then((value) {
       _runModelOnFrameResults.clear();
 
