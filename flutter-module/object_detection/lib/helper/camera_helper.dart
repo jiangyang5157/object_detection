@@ -20,7 +20,7 @@ class CameraHelper {
 
     cameraController = CameraController(
       await _getCameraDescription(),
-      ResolutionPreset.high,
+      ResolutionPreset.low,
       enableAudio: false,
     );
 

@@ -35,11 +35,17 @@ class TfLiteHelper {
 
   runModelOnFrame(CameraImage image) async {
     await Tflite.runModelOnFrame(
-            bytesList: image.planes.map((plane) {
-              return plane.bytes;
-            }).toList(),
-            numResults: 3)
-        .then((value) {
+      bytesList: image.planes.map((plane) {
+        return plane.bytes;
+      }).toList(),
+      imageHeight: image.height,
+      imageWidth: image.width,
+      imageMean: 127.5,
+      imageStd: 127.5,
+      numResults: 5,
+      rotation: 90,
+      threshold: 0.1,
+    ).then((value) {
       _runModelOnFrameResults.clear();
 
       if (value.isNotEmpty) {
